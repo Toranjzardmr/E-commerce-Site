@@ -1,0 +1,188 @@
+{% extends 'shop/base.html' %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+</head>
+<body>
+    {% block body %}
+        <div class="container">
+
+            <div class="row">
+                <div class="col-md-12">
+                    <form class="card card-sm">
+                        <div class="card-body row no-gytters align-items-center">
+                            <div class="col">
+                                <input type="search" name="item_name" placeholder="Search for Products">
+                            </div>
+                            <div class="col-auto">
+                                <button class="btn btn-success" type="submit">Search</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="row">
+                {% for product in product_obj %}
+                <div class="col-md-3">
+                    <div class="card">
+                        <img src="{{ product.image }}" class="card-img-top" alt="...">
+                        <div class="card-body">
+                            <h5 id="nm{{ product.id }}" class="card-title">{{ product.title }}</h5>
+                            <p class="card-text text-decoration-line-through">$ {{ product.price }}</p>
+                            <p class="card-text"  id="price{{ product.id }}">{{ product.discount_price }}</p>
+                            <a href="{% url 'detail' item_id=product.id %}" class="btn btn-warning">Details</a>
+                            <button id="{{ product.id }}" class="btn btn-warning atc">Add to cart</button>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <div class="row">
+                <div class="col-md-3 offset-md-4">
+                    <ul class="pagination">
+
+                        {% if product_obj.has_previous %}
+                            <li class="page-item"><a class="page-link" href="?page=1">First Page</a></li>
+                            <li class="page-item"><a class="page-link" href="?page={{ product_obj.previous_page_number }}">Previous</a></li>
+                        {% endif %}
+                        <li class="page-item active"><a class="page-link" href="?page={{ product_obj.number }}">Current</a></li>
+                        {% if product_obj.has_next %}
+                            <li class="page-item"><a class="page-link" href="?page={{ product_obj.next_page_number }}">Next Page</a></li>
+                            <li class="page-item"><a class="page-link" href="?page={{ product_obj.paginator.num_pages }}">Last Page</a></li>
+                        {% endif %}
+                        
+                        
+                        
+                    </ul>
+                </div>
+            </div>
+
+        </div>
+    {% endblock %}
+</body>
+
+{% block js %}
+    <script type="text/javascript">
+        console.log('hey its working');
+
+        if(localStorage.getItem('cart') == null){
+
+            var cart = {};
+
+        }else{
+
+            cart = JSON.parse(localStorage.getItem('cart'));
+
+        }
+
+        $(document).on('click','.atc',function(){
+
+            console.log('the btn is clicked');
+
+            var item_id = this.id.toString();
+
+            
+            if(cart[item_id] != undefined){
+                quantity = cart[item_id][0] + 1;
+                cart[item_id][0] = quantity;
+                cart[item_id][2] = cart[item_id][2] + parseFloat(document.getElementById('price'+item_id).innerHTML);;
+
+            }else{
+                quantity = 1;
+                name = document.getElementById('nm'+item_id).innerHTML;
+                price = parseFloat(document.getElementById('price'+item_id).innerHTML);
+                cart[item_id] = [quantity,name,price];
+            }
+
+            localStorage.setItem('cart',JSON.stringify(cart));
+            
+            document.getElementById('cartpop').innerHTML = 'Cart(' + Object.keys(cart).length + ')';
+
+            DisplayCart(cart);
+
+
+        });
+        $(document).on('click', '#clearcart', function() {
+            localStorage.removeItem('cart');
+            cart = {};  // Reset the in-memory var too
+            document.getElementById('cartpop').innerHTML = 'Cart(0)';
+            DisplayCart(cart);  // Refresh popover to show empty
+            console.log('Cart cleared!');
+        });
+
+        /*
+        // GROKS CODE
+
+        // Grab the specific popover instance for the cart button
+        const cartPopover = bootstrap.Popover.getInstance(document.getElementById('cartpop'));
+        
+        document.getElementById('cartpop').innerHTML = 'Cart(' + Object.keys(cart).length + ')';
+        DisplayCart(cart);
+        
+        function DisplayCart(cart) {
+            var cartString = '';
+            cartString += 'Items in your cart :' + '</br>';
+            var cartindex = 1;
+            for (var x in cart) {
+                var nameElement = document.getElementById('nm' + x);
+                var itemName = nameElement ? nameElement.innerHTML : 'Unknown Item (ID: ' + x + ')';
+                cartString += cartindex + '. ' + itemName + ' QTY: ' + cart[x] + '</br>';
+                cartindex += 1;
+            }
+        
+            // Directly set the body content via the instance (no need for setAttribute)
+            cartPopover.setContent({
+                '.popover-body': cartString
+            });
+            cartPopover.update();  // Repositions if size changes
+        }
+
+        */
+
+        // MY CODE
+        
+       
+        document.getElementById('cartpop').innerHTML = 'Cart(' + Object.keys(cart).length + ')';
+
+        DisplayCart(cart);
+
+        function DisplayCart(cart){
+            var cartString = '';
+            cartString += 'Items in your cart :' + '<br>';
+            var cartindex = 1;
+            
+            let cartObject = JSON.parse(localStorage.getItem('cart'));
+
+            for(item in cartObject){
+
+                cartString += cartindex+ '. ';
+                cartString += cartObject[item][1] + '  QTY : ' + cartObject[item][0] + '<br>';
+                cartindex += 1;
+            }
+            cartString += "<a class='btn btn-warning' href='{% url 'checkout' %}' id='checkout'>Checkout</a>"
+            
+            document.getElementById('cartpop').setAttribute('data-bs-content',cartString);
+
+            // GROKS FIX FOR POPOVER NOT SHOWING
+            // Force refresh: Dispose old instance, then re-init to re-read attribute
+            const cartEl = document.getElementById('cartpop');
+            const oldInstance = bootstrap.Popover.getInstance(cartEl);
+            if (oldInstance) oldInstance.dispose();
+            new bootstrap.Popover(cartEl);  // Re-inits with new data-bs-content
+        }
+
+
+
+    </script>
+
+{% endblock %}
+
+</html>
+

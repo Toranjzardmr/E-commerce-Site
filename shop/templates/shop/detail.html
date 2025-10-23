@@ -1,0 +1,48 @@
+{% extends 'shop/base.html' %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    {% block body %}
+        <div class="container">
+            <div class="row">
+                <div class="col-md-12">
+                 
+                    <div class="card mb-3" >
+                        <div class="row g-0">
+                            <div class="col-md-4">
+                                <img src="{{ product_obj.image }}" class="img-fluid rounded-start" alt="#">
+                            </div>
+                            <div class="col-md-8">
+                                <div class="card-body">
+                                    <h5 class="card-title">{{ product_obj.title }}</h5>
+                                    <p class="card-text">{{ product_obj.desc }}</p>
+                                    <p class="card-text text-decoration-line-through"><small class="text-body-secondary">$ {{ product_obj.price }}</small></p>
+                                    <p class="card-text"><small class="text-body-secondary">$ {{ product_obj.discount_price }}</small></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+
+    {% endblock %}
+
+</body>
+
+{% block js %}
+<script type="text/javascript">
+    console.log('hey its working too');
+</script>
+
+{% endblock %}
+
+</html>
